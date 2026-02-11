@@ -8,7 +8,7 @@ class Kelas extends Model
 {
     protected $table = 'kelas';
     protected $primaryKey = 'id_kelas';
-    protected $fillable = ['id_jurusan', 'nama_kelas', 'tingkat'];
+    protected $fillable = ['id_jurusan', 'nama_kelas', 'tingkat', 'api_kelas_id'];
 
     // Relasi ke Jurusan
     public function jurusan()

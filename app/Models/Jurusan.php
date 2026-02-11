@@ -8,7 +8,7 @@ class Jurusan extends Model
 {
     protected $table = 'jurusan';
     protected $primaryKey = 'id_jurusan';
-    protected $fillable = ['nama_jurusan'];
+    protected $fillable = ['kode_jurusan', 'nama_jurusan'];
 
     public function kelas()
     {

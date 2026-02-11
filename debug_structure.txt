@@ -1,0 +1,40 @@
+--- START ---
+Fetching Siswa (Raw)...
+Type of getSiswa result: array
+Count: 3
+First item type: boolean
+First item content: 1
+
+Fetching Guru (Raw)...
+Count: 152
+First item: Array
+(
+    [id] => 1
+    [guru_id] => 391ffcbb-d0ea-4186-a710-2a7a8e553786
+    [sekolah_id] => 1
+    [nama] => A Rahmat Dimyati
+    [nuptk] => 0943766667110032
+    [nip] => 198806112011011001
+    [jenis_kelamin] => L
+    [tempat_lahir] => CIANJUR
+    [tanggal_lahir] => 1970-01-01
+    [nik] => 3203011106880014
+    [jenis_ptk_id] => 
+    [agama_id] => 
+    [status_kepegawaian_id] => 
+    [alamat] => 
+    [rt] => 
+    [rw] => 
+    [desa_kelurahan] => 
+    [kecamatan] => 
+    [kode_wilayah] => 
+    [kode_pos] => 
+    [no_hp] => 
+    [email] => arahmat.dimyati@gmail.com
+    [photo] => 5488096*
+    [created_at] => 2022-05-09 23:11:44
+    [updated_at] => 2022-05-10 01:08:03
+    [deleted_at] => 
+)
+
+Gurus with empty/blank NIP: 102

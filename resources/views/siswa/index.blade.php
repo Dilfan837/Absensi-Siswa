@@ -64,7 +64,7 @@
                     <thead>
                         <tr>
                             <th>Foto</th>
-                            <th>NIS</th>
+                            <th>NIS / NISN</th>
                             <th>Nama Siswa</th>
                             <th>Kelas</th>
                             <th>L/P</th>
@@ -81,7 +81,12 @@
                                         <div class="avatar avatar-sm bg-secondary rounded-circle"></div>
                                     @endif
                                 </td>
-                                <td>{{ $s->nis }}</td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold">{{ $s->nis }}</span>
+                                        <small class="text-muted">{{ $s->nisn ?? '-' }}</small>
+                                    </div>
+                                </td>
                                 <td><strong>{{ $s->nama_siswa }}</strong></td>
                                 <td>{{ $s->kelas->nama_kelas ?? 'N/A' }}</td>
                                 <td>{{ $s->jenis_kelamin }}</td>

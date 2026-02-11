@@ -1,0 +1,21 @@
+--- Debug Start ---
+Script started...
+Autoload loaded...
+App instance created...
+Kernel bootstrapped...
+Instantiating ZieApiService...
+Base URL: https://zieapi.zielabs.id/api/
+Attempting to fetch Kelas...
+RESULT: SUCCESS! 52 items found.
+First item: Array
+(
+    [0] => Array
+        (
+            [id] => 579
+            [nama] => X AKKUL 1
+            [jurusan] => AKKUL
+        )
+
+)
+
+Script finished.

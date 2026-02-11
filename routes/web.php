@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('kelas', KelasController::class);
         Route::resource('siswa', SiswaController::class);
         Route::resource('users', UserController::class);
+        Route::resource('guru', \App\Http\Controllers\GuruController::class); // Added Guru route
         Route::resource('roles', RoleController::class);
         
         // Settings
@@ -70,6 +71,16 @@ Route::middleware('auth')->group(function () {
             Route::post('/locations', [SettingController::class, 'storeLocation'])->name('settings.locations.store');
             Route::put('/locations/{id}', [SettingController::class, 'updateLocation'])->name('settings.locations.update');
             Route::delete('/locations/{id}', [SettingController::class, 'deleteLocation'])->name('settings.locations.delete');
+        });
+        
+        // API Sync Management
+        Route::prefix('sync')->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\ApiSyncController::class, 'index'])->name('admin.sync.index');
+            Route::post('/siswa', [App\Http\Controllers\Admin\ApiSyncController::class, 'syncSiswa'])->name('admin.sync.siswa');
+            Route::post('/guru', [App\Http\Controllers\Admin\ApiSyncController::class, 'syncGuru'])->name('admin.sync.guru');
+            Route::post('/kelas', [App\Http\Controllers\Admin\ApiSyncController::class, 'syncKelas'])->name('admin.sync.kelas');
+            Route::post('/all', [App\Http\Controllers\Admin\ApiSyncController::class, 'syncAll'])->name('admin.sync.all');
+            Route::get('/history', [App\Http\Controllers\Admin\ApiSyncController::class, 'history'])->name('admin.sync.history');
         });
     });
     
