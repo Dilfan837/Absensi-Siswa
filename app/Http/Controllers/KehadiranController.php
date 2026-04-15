@@ -17,6 +17,17 @@ class KehadiranController extends Controller
         // Menampilkan kehadiran berdasarkan sesi absensi tertentu
         $query = Kehadiran::with(['siswa', 'absensi']);
 
+        // Jika user adalah guru, hanya tampilkan kehadiran untuk sesi absensi miliknya
+        if (auth()->user()->role->nama_role === 'guru') {
+            $id_user = auth()->user()->id_user;
+            if ($id_user) {
+                // Filter berdasarkan id_user (dibuat_oleh) yang ada di tabel absensi
+                $query->whereHas('absensi', function($q) use ($id_user) {
+                    $q->where('dibuat_oleh', $id_user);
+                });
+            }
+        }
+
         if ($request->has('id_absensi')) {
             $query->where('id_absensi', $request->id_absensi);
         }

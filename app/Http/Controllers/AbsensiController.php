@@ -34,10 +34,19 @@ class AbsensiController extends Controller
             ->update(['status' => 'selesai']);
         // =============================
 
-        $data = Absensi::with('kelas')->latest()->get();
+        if (auth()->check() && auth()->user()->role->nama_role === 'guru') {
+            $data = Absensi::with('kelas')->where('dibuat_oleh', auth()->id())->latest()->get();
+        } else {
+            $data = Absensi::with('kelas')->latest()->get();
+        }
         $kelas = Kelas::all();
+        
+        $guruProfile = null;
+        if (auth()->check() && auth()->user()->role->nama_role === 'guru') {
+            $guruProfile = \App\Models\Guru::with('mataPelajaran')->where('id_user', auth()->id())->first();
+        }
 
-        return view('absensi.index', compact('data', 'kelas'));
+        return view('absensi.index', compact('data', 'kelas', 'guruProfile'));
     }
 
     public function store(Request $request)
@@ -235,10 +244,36 @@ class AbsensiController extends Controller
             }
 
             // Gunakan Database Transaction agar data aman
-            \DB::transaction(function () use ($detail, $sekarang) {
+            \DB::transaction(function () use ($detail, $sekarang, $request) {
+                // 1. Update status di detail absensi utama
                 $detail->update([
                     'status' => 'hadir',
                     'waktu_scan' => $sekarang
+                ]);
+
+                // 2. Simpan Foto Selfie ke storage
+                $fileName = null;
+                if ($request->foto_selfie) {
+                    $img = $request->foto_selfie;
+                    $folderPath = "public/absensi/selfie/";
+                    $image_parts = explode(";base64,", $img);
+                    
+                    if (count($image_parts) >= 2) {
+                        $image_base64 = base64_decode($image_parts[1]);
+                        $fileName = uniqid() . '.png';
+                        $file = $folderPath . $fileName;
+                        \Illuminate\Support\Facades\Storage::put($file, $image_base64);
+                    }
+                }
+
+                // 3. Catat di tabel Kehadiran sebagai Log Wajah & Waktu Akurat
+                \App\Models\Kehadiran::create([
+                    'id_absensi' => $detail->id_absensi,
+                    'id_siswa' => $detail->id_siswa,
+                    'waktu_absen' => $sekarang,
+                    'status_kehadiran' => 'Hadir',
+                    'lampiran_foto' => $fileName,
+                    'keterangan' => 'Hadir melalui sistem QR & Face Recognition'
                 ]);
             });
 
@@ -276,7 +311,17 @@ class AbsensiController extends Controller
             ->first();
 
         if (!$detail) {
-            return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di sesi ini.']);
+            // Periksa apakah siswa sebenarnya ada di kelas ini
+            $siswa = \App\Models\Siswa::find($id_siswa);
+            if ($siswa && $siswa->id_kelas == $absensi->id_kelas) {
+                $detail = DetailAbsensi::create([
+                    'id_absensi' => $absensi->id_absensi,
+                    'id_siswa' => $id_siswa,
+                    'status' => 'alpha'
+                ]);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di sesi ini.']);
+            }
         }
 
         // JIKA QR DISCAN LAGI PADAHAL SUDAH HADIR

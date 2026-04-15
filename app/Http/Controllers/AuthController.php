@@ -20,20 +20,53 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validasi input
-        $credentials = $request->validate([
+        $loginType = $request->input('login_type', 'default');
+        
+        $rules = [
             'username' => 'required|string',
             'password' => 'required|string',
-        ]);
+        ];
 
-        // Attempt login
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        if ($loginType === 'guru') {
+            $rules['email'] = 'required|email';
+        }
 
-            // Redirect berdasarkan role
+        // Validasi input
+        $credentials = $request->validate($rules);
+
+        // Attempt login (hanya pakai username & password untuk koneksi ke tabel users)
+        $authCredentials = [
+            'username' => $credentials['username'],
+            'password' => $credentials['password'],
+        ];
+
+        if (Auth::attempt($authCredentials)) {
             $user = Auth::user();
             $roleName = $user->role->nama_role;
 
+            // Validasi spesifik Guru
+            if ($loginType === 'guru') {
+                if ($roleName !== 'guru') {
+                    Auth::logout();
+                    return back()->withErrors(['username' => 'Akun ini bukan akun Guru. Silakan login sebagai Siswa/Admin.'])->withInput($request->only('username', 'login_type'));
+                }
+
+                // Cek kesesuaian email di tabel guru
+                if (!$user->guru || $user->guru->email !== $credentials['email']) {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Email yang Anda masukkan tidak sesuai dengan data terdaftar.'])->withInput($request->only('username', 'email', 'login_type'));
+                }
+            } else {
+                // Mencegah guru login via form default (opsional tapi disarankan sesuai permintaan)
+                if ($roleName === 'guru') {
+                    Auth::logout();
+                    return back()->withErrors(['username' => 'Guru harus login melalui form "Masuk sebagai Guru".'])->withInput();
+                }
+            }
+
+            $request->session()->regenerate();
+
+            // Redirect berdasarkan role
             switch ($roleName) {
                 case 'admin':
                     return redirect()->intended('/dashboard');

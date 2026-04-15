@@ -2,7 +2,24 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Account Settings /</span> Account</h4>
+    <div class="d-flex justify-content-between align-items-center py-3 mb-4">
+        <h4 class="fw-bold m-0"><span class="text-muted fw-light">Account Settings /</span> Account</h4>
+        @php
+            $dashboardUrl = url('/');
+            if (auth()->check()) {
+                $role = auth()->user()->role->nama_role;
+                $dashboardUrl = match($role) {
+                    'admin' => route('dashboard'),
+                    'guru' => route('guru.dashboard'),
+                    'siswa' => route('siswa.dashboard'),
+                    default => url('/'),
+                };
+            }
+        @endphp
+        <a href="{{ $dashboardUrl }}" class="btn btn-secondary">
+            <i class="bx bx-arrow-back me-1"></i> Kembali ke Dashboard
+        </a>
+    </div>
 
     <div class="row">
         <div class="col-md-12">
@@ -32,17 +49,14 @@
                         @csrf
                         @method('PUT')
                         <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-4">
-                            <img src="{{ auth()->user()->foto_profile }}" alt="user-avatar" class="d-block rounded" height="100" width="100" id="uploadedAvatar" />
+                            <img src="{{ auth()->user()->foto_profile }}" alt="user-avatar" class="d-block rounded" height="100" width="100" id="uploadedAvatar" style="object-fit: cover;" />
                             <div class="button-wrapper">
                                 <label for="upload" class="btn btn-primary me-2 mb-4" tabindex="0">
                                     <span class="d-none d-sm-block">Upload new photo</span>
                                     <i class="bx bx-upload d-block d-sm-none"></i>
                                     <input type="file" id="upload" class="account-file-input" hidden name="foto" accept="image/png, image/jpeg" />
                                 </label>
-                                <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
-                                    <i class="bx bx-reset d-block d-sm-none"></i>
-                                    <span class="d-none d-sm-block">Reset</span>
-                                </button>
+
 
                                 <p class="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of 2MB</p>
                             </div>
@@ -63,7 +77,7 @@
                             </div>
                             <div class="mt-2">
                                 <button type="submit" class="btn btn-primary me-2">Save changes</button>
-                                <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="window.location.reload();">Cancel</button>
                             </div>
                         </div>
                     </form>
@@ -76,26 +90,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function (e) {
-        (function () {
-            const deactivationAcc = document.querySelector('#formAccountDeactivation');
-            // Update/reset user image of account page
-            let accountUserImage = document.getElementById('uploadedAvatar');
-            const fileInput = document.querySelector('.account-file-input'),
-            resetFileInput = document.querySelector('.account-image-reset');
+        // Update/reset user image of account page
+        let accountUserImage = document.getElementById('uploadedAvatar');
+        const fileInput = document.querySelector('.account-file-input');
 
-            if (accountUserImage) {
-            const resetImage = accountUserImage.src;
+        if (accountUserImage) {
             fileInput.onchange = () => {
                 if (fileInput.files[0]) {
-                accountUserImage.src = window.URL.createObjectURL(fileInput.files[0]);
+                    accountUserImage.src = window.URL.createObjectURL(fileInput.files[0]);
                 }
             };
-            resetFileInput.onclick = () => {
-                fileInput.value = '';
-                accountUserImage.src = resetImage;
-            };
-            }
-        })();
+        }
     });
 </script>
 @endsection

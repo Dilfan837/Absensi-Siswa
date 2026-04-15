@@ -138,7 +138,18 @@
 
             <form action="{{ route('login') }}" method="POST">
                 @csrf
+                <input type="hidden" name="login_type" id="login_type" value="default">
                 
+                <div class="form-group" id="emailGroup" style="display: none;">
+                    <label for="email">Email Guru</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        value="{{ old('email') }}"
+                        placeholder="Masukkan email terdaftar"
+                    >
+                </div>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input 
@@ -154,19 +165,83 @@
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Masukkan password"
-                        required
-                    >
+                    <div style="position: relative;">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Masukkan password"
+                            style="padding-right: 40px;"
+                            required
+                        >
+                        <span id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; display: flex; align-items: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
+
+                <script>
+                    const togglePassword = document.querySelector('#togglePassword');
+                    const password = document.querySelector('#password');
+
+                    togglePassword.addEventListener('click', function (e) {
+                        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                        password.setAttribute('type', type);
+                        
+                        // Toggle icon
+                        if (type === 'text') {
+                            this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+                        } else {
+                            this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                        }
+                    });
+                </script>
 
                 <button type="submit" class="btn-login">
                     Masuk
                 </button>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="javascript:void(0)" id="toggleLoginType" style="color: #667eea; text-decoration: none; font-size: 14px; font-weight: 500;">
+                        Masuk sebagai Guru
+                    </a>
+                </div>
             </form>
+
+            <script>
+                const toggleLoginBtn = document.getElementById('toggleLoginType');
+                const emailGroup = document.getElementById('emailGroup');
+                const emailInput = document.getElementById('email');
+                const loginTypeInput = document.getElementById('login_type');
+
+                toggleLoginBtn.addEventListener('click', function() {
+                    if (loginTypeInput.value === 'default') {
+                        // Switch to Guru Mode
+                        loginTypeInput.value = 'guru';
+                        emailGroup.style.display = 'block';
+                        emailInput.setAttribute('required', 'required');
+                        toggleLoginBtn.textContent = 'Masuk sebagai Siswa';
+                    } else {
+                        // Switch to Default Mode
+                        loginTypeInput.value = 'default';
+                        emailGroup.style.display = 'none';
+                        emailInput.removeAttribute('required');
+                        emailInput.value = ''; // clear value just in case
+                        toggleLoginBtn.textContent = 'Masuk sebagai Guru';
+                    }
+                });
+
+                // Preserve state on validation error
+                if ("{{ old('login_type') }}" === 'guru') {
+                    loginTypeInput.value = 'guru';
+                    emailGroup.style.display = 'block';
+                    emailInput.setAttribute('required', 'required');
+                    toggleLoginBtn.textContent = 'Masuk sebagai Siswa';
+                }
+            </script>
         </div>
 
         <div class="login-footer">

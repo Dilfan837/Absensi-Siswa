@@ -54,7 +54,16 @@ class ScanController extends Controller
             ->first();
 
         if (!$detail) {
-            return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di kelas ini!']);
+            if ($siswa->id_kelas == $absensi->id_kelas) {
+                // Auto-create DetailAbsensi if the student was added to the class after the session started
+                $detail = \App\Models\DetailAbsensi::create([
+                    'id_absensi' => $absensi->id_absensi,
+                    'id_siswa' => $id_siswa,
+                    'status' => 'alpha'
+                ]);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di kelas ini!']);
+            }
         }
 
         if ($detail->status == 'hadir') {

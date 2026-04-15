@@ -86,13 +86,36 @@
                                 <td>{{ $s->kelas->nama_kelas ?? 'N/A' }}</td>
                                 <td>{{ $s->jenis_kelamin }}</td>
                                 <td>
-                                    <form action="{{ route('siswa.destroy', $s->id_siswa) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bx bx-trash"></i>
+                                    <div class="d-flex gap-2">
+                                        @if(!$s->face_descriptor)
+                                            <button class="btn btn-sm btn-info text-white btn-tambah-wajah" 
+                                                data-id="{{ $s->id_siswa }}" 
+                                                data-nama="{{ $s->nama_siswa }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalTambahWajah"
+                                                title="Tambah Wajah">
+                                                <i class="bx bx-camera"></i>
+                                            </button>
+                                        @endif
+                                        <button class="btn btn-sm btn-warning text-white btn-edit-siswa"
+                                            data-id="{{ $s->id_siswa }}"
+                                            data-nis="{{ $s->nis }}"
+                                            data-nama="{{ $s->nama_siswa }}"
+                                            data-kelas="{{ $s->id_kelas }}"
+                                            data-gender="{{ $s->jenis_kelamin }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEditSiswa"
+                                            title="Edit">
+                                            <i class="bx bx-edit"></i>
                                         </button>
-                                    </form>
+                                        <form action="{{ route('siswa.destroy', $s->id_siswa) }}" method="POST" class="d-inline"
+                                            onsubmit="return confirm('Yakin ingin menghapus?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -183,6 +206,87 @@
             </div>
         </div>
     </div>
+    {{-- Modal Edit Siswa --}}
+    <div class="modal fade" id="modalEditSiswa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Data Siswa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formEditSiswa" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">NIS</label>
+                            <input type="text" name="nis" id="edit_nis" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nama Lengkap</label>
+                            <input type="text" name="nama_siswa" id="edit_nama" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kelas</label>
+                            <select name="id_kelas" id="edit_kelas" class="form-select" required>
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($list_kelas as $k)
+                                    <option value="{{ $k->id_kelas }}">{{ $k->nama_kelas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" id="edit_gender" class="form-select" required>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Tambah Wajah --}}
+    <div class="modal fade" id="modalTambahWajah" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pendaftaran Wajah: <span id="wajah_nama_siswa" class="text-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formTambahWajah" method="POST">
+                    @csrf
+                    <div class="modal-body text-center">
+                        <label class="form-label fw-bold d-block">Ambil Dataset Wajah</label>
+                        <div class="video-container mx-auto">
+                            <video id="webcam_wajah" autoplay playsinline></video>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-info text-white mb-3" onclick="takeSnapshotWajah()">
+                            <i class="bx bx-camera me-1"></i> Capture Wajah
+                        </button>
+                        <div id="results_wajah" style="display:none;" class="mt-2">
+                            <p class="small fw-bold mb-1">Hasil Jepretan:</p>
+                            <img id="prev-img_wajah" src="" class="img-thumbnail mb-1">
+                            <p class="text-success small fw-bold mb-0"><i class="bx bx-check-circle"></i> Wajah Siap!</p>
+                        </div>
+                        <input type="hidden" name="image_data" id="image_data_wajah" required>
+                        <input type="hidden" name="face_descriptor" id="face_descriptor_wajah" required>
+                        <canvas id="canvas_wajah" style="display:none;"></canvas>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Wajah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <style>
         /* Mengatur tampilan kamera agar kotak sempurna di tengah */
@@ -199,7 +303,7 @@
             margin-bottom: 10px;
         }
 
-        #webcam {
+        #webcam, #webcam_wajah {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -208,7 +312,7 @@
             /* Efek Cermin saat live agar tidak bingung */
         }
 
-        #prev-img {
+        #prev-img, #prev-img_wajah {
             width: 120px;
             height: 120px;
             object-fit: cover;
@@ -353,5 +457,124 @@
                 showConfirmButton: false
             });
         }
+
+        // --- Logika Kamera Tambah Wajah (Edit) ---
+        const videoWajah = document.getElementById('webcam_wajah');
+        const canvasWajah = document.getElementById('canvas_wajah');
+        const imageDataInputWajah = document.getElementById('image_data_wajah');
+        const faceDescriptorInputWajah = document.getElementById('face_descriptor_wajah');
+        const prevImgWajah = document.getElementById('prev-img_wajah');
+        const resultsDivWajah = document.getElementById('results_wajah');
+
+        const modalWajah = document.getElementById('modalTambahWajah');
+        if(modalWajah) {
+            modalWajah.addEventListener('shown.bs.modal', function () {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true }).then(function (stream) {
+                        streamActive = stream;
+                        videoWajah.srcObject = stream;
+                        videoWajah.play();
+                    }).catch(err => {
+                        Swal.fire('Error', 'Gagal akses kamera: ' + err.message, 'error');
+                    });
+                }
+            });
+
+            modalWajah.addEventListener('hidden.bs.modal', function () {
+                if (streamActive) {
+                    streamActive.getTracks().forEach(track => track.stop());
+                }
+                resultsDivWajah.style.display = 'none';
+                prevImgWajah.src = '';
+                imageDataInputWajah.value = '';
+                faceDescriptorInputWajah.value = '';
+            });
+        }
+
+        async function takeSnapshotWajah() {
+            if (!modelsLoaded) {
+                Swal.fire('Loading...', 'Model AI sedang dimuat, tunggu sebentar...', 'info');
+                return;
+            }
+
+            const context = canvasWajah.getContext('2d');
+            const size = 400;
+            canvasWajah.width = size;
+            canvasWajah.height = size;
+
+            context.translate(size, 0);
+            context.scale(-1, 1);
+
+            const videoWidth = videoWajah.videoWidth;
+            const videoHeight = videoWajah.videoHeight;
+            const aspectRatio = videoWidth / videoHeight;
+
+            let sourceX, sourceY, sourceWidth, sourceHeight;
+
+            if (aspectRatio > 1) { // Landscape
+                sourceHeight = videoHeight;
+                sourceWidth = videoHeight;
+                sourceX = (videoWidth - videoHeight) / 2;
+                sourceY = 0;
+            } else { // Portrait
+                sourceWidth = videoWidth;
+                sourceHeight = videoWidth;
+                sourceX = 0;
+                sourceY = (videoHeight - videoWidth) / 2;
+            }
+
+            context.drawImage(videoWajah, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, size, size);
+
+            const detection = await faceapi.detectSingleFace(canvasWajah, new faceapi.SsdMobilenetv1Options({
+                minConfidence: 0.5
+            })).withFaceLandmarks().withFaceDescriptor();
+
+            if (!detection) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Wajah Tidak Terdeteksi',
+                    text: 'Pastikan wajah terlihat jelas, pencahayaan cukup, dan tidak memakai masker.',
+                    confirmButtonColor: '#ff3e1d'
+                });
+                return;
+            }
+
+            const dataURL = canvasWajah.toDataURL('image/jpeg', 0.9);
+            imageDataInputWajah.value = dataURL;
+
+            const descriptorArray = Array.from(detection.descriptor);
+            faceDescriptorInputWajah.value = JSON.stringify(descriptorArray);
+
+            prevImgWajah.src = dataURL;
+            resultsDivWajah.style.display = 'block';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Wajah Terdeteksi!',
+                text: 'Data wajah siap disimpan.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // Listener Edit & Tambah Wajah (Menggunakan Event Delegation agar tahan terhadap DOM manipulation)
+        document.addEventListener('click', function(e) {
+            const btnWajah = e.target.closest('.btn-tambah-wajah');
+            if (btnWajah) {
+                const id = btnWajah.dataset.id;
+                document.getElementById('wajah_nama_siswa').textContent = btnWajah.dataset.nama;
+                document.getElementById('formTambahWajah').action = `/siswa/${id}/wajah`;
+            }
+
+            const btnEdit = e.target.closest('.btn-edit-siswa');
+            if (btnEdit) {
+                const id = btnEdit.dataset.id;
+                document.getElementById('edit_nis').value = btnEdit.dataset.nis;
+                document.getElementById('edit_nama').value = btnEdit.dataset.nama;
+                document.getElementById('edit_kelas').value = btnEdit.dataset.kelas;
+                document.getElementById('edit_gender').value = btnEdit.dataset.gender;
+                document.getElementById('formEditSiswa').action = `/siswa/${id}`;
+            }
+        });
     </script>
 @endpush

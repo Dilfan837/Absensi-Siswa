@@ -41,7 +41,16 @@ class SiswaAbsenController extends Controller
                                 ->first();
 
         if (!$detail) {
-            return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di sesi absen kelas ini.'], 403);
+            if ($siswa->id_kelas == $absensi->id_kelas) {
+                // Auto-create DetailAbsensi if the student was added to the class after the session started
+                $detail = DetailAbsensi::create([
+                    'id_absensi' => $absensi->id_absensi,
+                    'id_siswa' => $siswa->id_siswa,
+                    'status' => 'alpha'
+                ]);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar di sesi absen kelas ini.'], 403);
+            }
         }
 
         if ($detail->status == 'hadir') {

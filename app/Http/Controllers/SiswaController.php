@@ -115,7 +115,12 @@ class SiswaController extends Controller
             'id_kelas' => 'required',
         ]);
 
-        $siswa->update($request->all());
+        $siswa->update([
+            'nis' => $request->nis,
+            'nama_siswa' => $request->nama_siswa,
+            'id_kelas' => $request->id_kelas,
+            'jenis_kelamin' => $request->has('jenis_kelamin') ? $request->jenis_kelamin : $siswa->jenis_kelamin,
+        ]);
 
         // Update username di tabel users juga jika NIS berubah
         $siswa->user->update([
@@ -123,6 +128,47 @@ class SiswaController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Data siswa berhasil diperbarui');
+    }
+
+    public function updateWajah(Request $request, $id)
+    {
+        $siswa = Siswa::findOrFail($id);
+        
+        $request->validate([
+            'image_data' => 'required',
+            'face_descriptor' => 'required',
+        ]);
+        
+        try {
+            DB::transaction(function () use ($request, $siswa) {
+                // --- LOGIKA PROSES FOTO ---
+                $img = $request->image_data;
+                $image_parts = explode(";base64,", $img);
+                $image_base64 = base64_decode($image_parts[1]);
+
+                $fileName = $siswa->nis . '_face_' . time() . '.jpg';
+
+                if (!Storage::disk('public')->exists('siswa')) {
+                    Storage::disk('public')->makeDirectory('siswa');
+                }
+                
+                // hapus foto lama jika ada
+                if ($siswa->foto && Storage::disk('public')->exists('siswa/' . $siswa->foto)) {
+                    Storage::disk('public')->delete('siswa/' . $siswa->foto);
+                }
+
+                Storage::disk('public')->put('siswa/' . $fileName, $image_base64);
+
+                $siswa->update([
+                    'foto' => $fileName,
+                    'face_descriptor' => $request->face_descriptor,
+                ]);
+            });
+
+            return redirect()->back()->with('success', 'Wajah siswa berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal simpan wajah: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)

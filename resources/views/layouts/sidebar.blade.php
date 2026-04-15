@@ -57,10 +57,38 @@
         </a>
       </li>
 
+      <li class="menu-item {{ Request::is('data-guru*') ? 'active' : '' }}">
+        <a href="{{ route('guru.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-user-pin"></i>
+          <div data-i18n="Guru">Data Guru</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('mata-pelajaran*') ? 'active' : '' }}">
+        <a href="{{ route('mata-pelajaran.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-book-bookmark"></i>
+          <div data-i18n="Mata Pelajaran">Data Mata Pelajaran</div>
+        </a>
+      </li>
+
       <li class="menu-item {{ Request::is('siswa*') ? 'active' : '' }}">
         <a href="{{ route('siswa.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-user-badge"></i>
           <div data-i18n="Siswa">Data Siswa</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('assessment-categories*') ? 'active' : '' }}">
+        <a href="{{ route('assessment-categories.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-list-check"></i>
+          <div data-i18n="Kategori Penilaian">Kategori Penilaian</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('penilaian-guru*') ? 'active' : '' }}">
+        <a href="{{ route('admin.assessments.guru') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-star"></i>
+          <div data-i18n="Penilaian Guru">Penilaian Guru</div>
         </a>
       </li>
 
@@ -82,6 +110,31 @@
         </a>
       </li>
 
+      <!-- Monitoring Data Dropdown (Admin) -->
+      <li class="menu-item {{ Request::is('monitoring*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+          <div data-i18n="Monitoring Data">Monitoring Data</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ Request::is('monitoring/siswa') ? 'active' : '' }}">
+            <a href="{{ route('admin.monitoring.siswa') }}" class="menu-link">
+              <div data-i18n="Sikap Siswa">Sikap Siswa</div>
+            </a>
+          </li>
+          <li class="menu-item {{ Request::is('monitoring/guru') ? 'active' : '' }}">
+            <a href="{{ route('admin.monitoring.guru') }}" class="menu-link">
+              <div data-i18n="Kinerja Guru">Kinerja Guru</div>
+            </a>
+          </li>
+          <li class="menu-item {{ Request::is('monitoring/rekap') ? 'active' : '' }}">
+            <a href="{{ route('admin.monitoring.recap') }}" class="menu-link">
+              <div data-i18n="Rekapitulasi Cetak">Rekapitulasi Cetak</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <li class="menu-header small text-uppercase">
         <span class="menu-header-text">Pengaturan</span>
       </li>
@@ -89,7 +142,7 @@
       <li class="menu-item {{ Request::is('settings*') ? 'active' : '' }}">
         <a href="{{ route('settings.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-cog"></i>
-          <div data-i18n="Settings">Settings</div>
+          <div data-i18n="Pengaturan">Pengaturan</div>
         </a>
       </li>
     @endif
@@ -104,13 +157,54 @@
       </li>
 
       <li class="menu-header small text-uppercase">
-        <span class="menu-header-text">Manajemen Absensi</span>
+        <span class="menu-header-text">Absensi & Evaluasi</span>
       </li>
 
       <li class="menu-item {{ Request::is('absensi*') ? 'active' : '' }}">
         <a href="{{ route('absensi.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
-          <div data-i18n="Absensi">Data Absensi</div>
+          <div data-i18n="Data Absensi">Data Absensi</div>
+        </a>
+      </li>
+      
+      <li class="menu-item {{ Request::is('kehadiran*') ? 'active' : '' }}">
+        <a href="{{ route('kehadiran.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-list-check"></i>
+          <div data-i18n="Data Kehadiran">Data Kehadiran</div>
+        </a>
+      </li>
+      
+      <li class="menu-item {{ Request::is('penilaian-siswa*') ? 'active' : '' }}">
+        <a href="{{ route('guru.assessments.siswa') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-star"></i>
+          <div data-i18n="Penilaian Siswa">Penilaian Siswa</div>
+        </a>
+      </li>
+      
+      <!-- Monitoring Data Dropdown (Guru) -->
+      <li class="menu-item {{ Request::is('monitoring-kelas*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-pie-chart-alt"></i>
+          <div data-i18n="Monitoring Siswa">Monitoring Siswa</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ Request::is('monitoring-kelas') || Request::is('monitoring-kelas/siswa*') ? 'active' : '' }}">
+            <a href="{{ route('guru.monitoring.siswa') }}" class="menu-link">
+              <div data-i18n="Pantau Karakter Kelas">Pantau Karakter Kelas</div>
+            </a>
+          </li>
+          <li class="menu-item {{ Request::is('monitoring-kelas/rekap') ? 'active' : '' }}">
+            <a href="{{ route('guru.monitoring.recap') }}" class="menu-link">
+              <div data-i18n="Rekapitulasi Cetak">Rekapitulasi Cetak</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+      
+      <li class="menu-item {{ Request::is('guru/laporanku*') ? 'active' : '' }}">
+        <a href="{{ route('guru.reports.my') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-radar"></i>
+          <div data-i18n="Laporan Kinerjaku">Laporan Kinerjaku</div>
         </a>
       </li>
     @endif
@@ -125,13 +219,20 @@
       </li>
 
       <li class="menu-header small text-uppercase">
-        <span class="menu-header-text">Absensi</span>
+        <span class="menu-header-text">Absensi & Evaluasi</span>
       </li>
 
       <li class="menu-item {{ Request::is('scan') ? 'active' : '' }}">
         <a href="{{ route('scan.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-qr-scan"></i>
           <div data-i18n="Scan">Scanner Absensi</div>
+        </a>
+      </li>
+      
+      <li class="menu-item {{ Request::is('siswa/laporanku*') ? 'active' : '' }}">
+        <a href="{{ route('siswa.reports.my') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-radar"></i>
+          <div data-i18n="Laporan Sikapku">Laporan Sikapku</div>
         </a>
       </li>
     @endif

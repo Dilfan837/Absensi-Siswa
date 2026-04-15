@@ -30,6 +30,11 @@ class User extends Authenticatable
         return $this->hasOne(Siswa::class, 'id_user', 'id_user');
     }
 
+    public function guru()
+    {
+        return $this->hasOne(Guru::class, 'id_user', 'id_user');
+    }
+
     // Helper methods untuk cek role
     public function isAdmin()
     {
@@ -51,7 +56,16 @@ class User extends Authenticatable
         if ($this->foto && file_exists(public_path('storage/photos/' . $this->foto))) {
             return asset('storage/photos/' . $this->foto);
         }
+
+        if ($this->isGuru() && $this->guru && $this->guru->photo && file_exists(public_path('storage/guru/' . $this->guru->photo))) {
+            return asset('storage/guru/' . $this->guru->photo);
+        }
+
+        if ($this->isSiswa() && $this->siswa && $this->siswa->foto && file_exists(public_path('storage/siswa/' . $this->siswa->foto))) {
+            return asset('storage/siswa/' . $this->siswa->foto);
+        }
+
         // Fallback to default
-        return asset('assets/img/avatars/1.png');
+        return asset('assets/img/avatars/8.jpg');
     }
 }

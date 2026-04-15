@@ -35,6 +35,9 @@ Route::middleware('auth')->group(function () {
     // Logout (accessible by all authenticated users)
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
+    // Global Search (accessible by all authenticated users)
+    Route::get('/search', [\App\Http\Controllers\SearchController::class, 'search'])->name('search');
+    
     // ============================================
     // PROFILE ROUTES (Authenticated users)
     // ============================================
@@ -50,6 +53,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/siswa/dashboard', [SiswaDashboardController::class, 'index'])->name('siswa.dashboard');
         Route::get('/siswa-scan', [SiswaAbsenController::class, 'index'])->name('siswa.scan');
         Route::post('/proses-scan-siswa', [SiswaAbsenController::class, 'prosesScan'])->name('siswa.proses-scan');
+        
+        // Laporan Karakter (Radar) untuk Siswa sendiri
+        Route::get('/siswa-laporanku', [\App\Http\Controllers\Siswa\SiswaReportController::class, 'myReport'])->name('siswa.reports.my');
     });
     
     // ============================================
@@ -57,11 +63,29 @@ Route::middleware('auth')->group(function () {
     // ============================================
     Route::middleware('role:admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
         Route::resource('jurusan', JurusanController::class);
         Route::resource('kelas', KelasController::class);
+        Route::resource('data-guru', \App\Http\Controllers\GuruController::class)->names('guru')->parameters(['data-guru' => 'id']);
+        Route::post('siswa/{id}/wajah', [SiswaController::class, 'updateWajah'])->name('siswa.updateWajah');
         Route::resource('siswa', SiswaController::class);
         Route::resource('users', UserController::class);
         Route::resource('roles', RoleController::class);
+        Route::resource('mata-pelajaran', \App\Http\Controllers\MataPelajaranController::class);
+        Route::resource('assessment-categories', \App\Http\Controllers\Admin\AssessmentCategoryController::class);
+        
+        // Penilaian Guru oleh Admin
+        Route::get('penilaian-guru', [\App\Http\Controllers\Admin\AdminAssessmentController::class, 'indexGuru'])->name('admin.assessments.guru');
+        Route::post('penilaian-guru/store', [\App\Http\Controllers\Admin\AdminAssessmentController::class, 'storeGuru'])->name('admin.assessments.guru.store');
+        
+        // Monitoring & Dashboard Admin
+        Route::prefix('monitoring')->name('admin.monitoring.')->group(function () {
+            Route::get('siswa', [\App\Http\Controllers\Admin\AdminMonitoringController::class, 'monitorSiswa'])->name('siswa');
+            Route::get('siswa/{id_siswa}/detail', [\App\Http\Controllers\Siswa\SiswaReportController::class, 'show'])->name('siswa.detail');
+            Route::get('guru', [\App\Http\Controllers\Admin\AdminMonitoringController::class, 'monitorGuru'])->name('guru');
+            Route::get('guru/{id_guru}/detail', [\App\Http\Controllers\Guru\GuruReportController::class, 'show'])->name('guru.detail');
+            Route::get('rekap', [\App\Http\Controllers\Admin\AdminMonitoringController::class, 'recapReport'])->name('recap');
+        });
         
         // Settings
         Route::prefix('settings')->group(function () {
@@ -96,6 +120,7 @@ Route::middleware('auth')->group(function () {
     // ============================================
     Route::middleware('role:guru')->group(function () {
         Route::get('/guru/dashboard', [GuruDashboardController::class, 'index'])->name('guru.dashboard');
+        Route::get('/guru/dashboard/export', [GuruDashboardController::class, 'export'])->name('guru.dashboard.export');
         
         // Absensi Management (Guru Specifc Update/Close)
         Route::prefix('absensi')->group(function () {
@@ -104,6 +129,20 @@ Route::middleware('auth')->group(function () {
             Route::put('/detail/{id}/update', [AbsensiController::class, 'updateStatus'])->name('absensi.detail.update');
         });
         Route::resource('absensi', AbsensiController::class);
+        
+        // Penilaian Siswa oleh Guru
+        Route::get('penilaian-siswa', [\App\Http\Controllers\Guru\GuruAssessmentController::class, 'index'])->name('guru.assessments.siswa');
+        Route::post('penilaian-siswa/store', [\App\Http\Controllers\Guru\GuruAssessmentController::class, 'store'])->name('guru.assessments.siswa.store');
+        
+        // Monitoring Karakter Siswa
+        Route::prefix('monitoring-kelas')->name('guru.monitoring.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Guru\GuruMonitoringController::class, 'monitorSiswa'])->name('siswa');
+            Route::get('siswa/{id_siswa}/detail', [\App\Http\Controllers\Siswa\SiswaReportController::class, 'show'])->name('siswa.detail');
+            Route::get('rekap', [\App\Http\Controllers\Guru\GuruMonitoringController::class, 'recapReport'])->name('recap');
+        });
+        
+        // Laporan Kinerja (Radar) untuk Guru sendiri
+        Route::get('laporanku', [\App\Http\Controllers\Guru\GuruReportController::class, 'myReport'])->name('guru.reports.my');
     });
     
     // Kehadiran (accessible by admin and guru)

@@ -18,8 +18,14 @@ class UserController extends Controller
         }
 
         $users = $query->get();
+        
+        $admins = $users->filter(fn($u) => optional($u->role)->nama_role === 'admin');
+        $gurus  = $users->filter(fn($u) => optional($u->role)->nama_role === 'guru');
+        $siswas = $users->filter(fn($u) => optional($u->role)->nama_role === 'siswa');
+
         $roles = Role::all();
-        return view('users.index', compact('users', 'roles'));
+        $mapels = \App\Models\MataPelajaran::all();
+        return view('users.index', compact('admins', 'gurus', 'siswas', 'roles', 'mapels'));
     }
 
     public function store(Request $request)
@@ -30,11 +36,31 @@ class UserController extends Controller
             'id_role' => 'required'
         ]);
 
-        User::create([
+        $role = Role::find($request->id_role);
+        
+        if ($role && $role->nama_role === 'guru') {
+            $request->validate([
+                'id_mapel' => 'required|exists:mata_pelajarans,id_mapel'
+            ], [
+                'id_mapel.required' => 'Mata pelajaran wajib diisi untuk peran Guru.',
+                'id_mapel.exists' => 'Mata pelajaran yang dipilih tidak valid.'
+            ]);
+        }
+
+        $user = User::create([
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'id_role' => $request->id_role
         ]);
+
+        if ($role && $role->nama_role === 'guru') {
+            \App\Models\Guru::create([
+                'id_user' => $user->id_user,
+                'nama' => $user->username,
+                'jenis_kelamin' => 'L', // default, bisa diupdate guru nanti
+                'id_mapel' => $request->id_mapel
+            ]);
+        }
 
         return redirect()->back()->with('success', 'User berhasil dibuat');
     }

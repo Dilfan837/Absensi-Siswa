@@ -78,7 +78,12 @@
                     </div>
                     <div class="mb-3">
                         <label>Nama Sesi (Mata Pelajaran)</label>
-                        <input type="text" name="nama_absensi" class="form-control" placeholder="Contoh: Matematika - Logika" required>
+                        @if(isset($guruProfile) && $guruProfile->id_mapel && $guruProfile->mataPelajaran)
+                            <input type="text" name="nama_absensi" class="form-control" value="{{ $guruProfile->mataPelajaran->nama_mapel }}" readonly required>
+                            <small class="text-muted">Mata pelajaran otomatis terisi sesuai dengan profil Anda.</small>
+                        @else
+                            <input type="text" name="nama_absensi" class="form-control" placeholder="Contoh: Matematika - Logika" required>
+                        @endif
                     </div>
                     <div class="row">
                         <div class="col-6">

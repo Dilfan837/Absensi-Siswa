@@ -2,13 +2,74 @@
 
 @section('content')
   <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center pb-2">
+            <h5 class="mb-0">Cetak Laporan Kehadiran Anda</h5>
+          </div>
+          <div class="card-body pb-3">
+            <form action="{{ route('guru.dashboard.export') }}" method="GET" id="formExportGuru">
+              <div class="d-flex align-items-end gap-3 flex-wrap">
+                <div>
+                  <label class="form-label mb-1">Cepat Pilih Waktu</label><br>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(0)">Hari Ini</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(7)">1 Minggu</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(30)">1 Bulan</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(365)">1 Tahun</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="start_date" class="form-label mb-1">Mulai Tanggal</label>
+                  <input type="date" class="form-control form-control-sm" name="start_date" id="start_date" required value="{{ request('start_date', date('Y-m-d')) }}">
+                </div>
+
+                <div>
+                  <label for="end_date" class="form-label mb-1">Sampai Tanggal</label>
+                  <input type="date" class="form-control form-control-sm" name="end_date" id="end_date" required value="{{ request('end_date', date('Y-m-d')) }}">
+                </div>
+
+                <div class="ms-auto d-flex gap-2 mt-3 mt-md-0">
+                  <button type="submit" name="export_type" value="excel" class="btn btn-sm btn-success">
+                    <i class="bx bx-spreadsheet me-1"></i> Export Excel
+                  </button>
+                  <button type="submit" name="export_type" value="pdf" class="btn btn-sm btn-danger">
+                    <i class="bx bxs-file-pdf me-1"></i> Export PDF
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function setDateRange(days) {
+          let today = new Date();
+          let endDate = today.toISOString().split('T')[0];
+          let startDate = new Date();
+          
+          if (days === 0) {
+              startDate = today;
+          } else {
+              startDate.setDate(today.getDate() - days);
+          }
+          
+          document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+          document.getElementById('end_date').value = endDate;
+      }
+    </script>
+    
     <div class="row">
       <div class="col-lg-8 mb-4 order-0">
         <div class="card">
           <div class="d-flex align-items-end row">
             <div class="col-sm-7">
               <div class="card-body">
-                <h5 class="card-title text-primary">Selamat Datang, Guru! 🎓</h5>
+                <h5 class="card-title text-primary">Selamat Datang, {{ $namaGuru }}! 🎓</h5>
                 <p class="mb-4">
                   Anda memiliki <span class="fw-bold">{{ $sesiAktif }}</span> sesi absensi aktif saat ini.
                 </p>

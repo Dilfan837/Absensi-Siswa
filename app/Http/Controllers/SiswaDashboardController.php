@@ -13,7 +13,23 @@ class SiswaDashboardController extends Controller
         $siswa = auth()->user()->siswa;
         
         if (!$siswa) {
-            abort(500, 'Data siswa tidak ditemukan. Hubungi administrator untuk menghubungkan akun Anda dengan data siswa.');
+            // gracefully handle missing profile rather than crashing with 500
+            $dummySiswa = (object)[
+                'nama_siswa' => auth()->user()->username ?? 'Siswa',
+                'id_siswa' => 0
+            ];
+            
+            return view('siswa.dashboard', [
+                'siswa' => $dummySiswa,
+                'totalHadir' => 0,
+                'totalIzin' => 0,
+                'totalSakit' => 0,
+                'totalAlpha' => 0,
+                'totalKehadiran' => 0,
+                'persentaseKehadiran' => 0,
+                'riwayatAbsensi' => collect(),
+                'absensiHariIni' => null
+            ])->with('error', 'Data profil Siswa Anda belum terhubung. Silakan hubungi Administrator.');
         }
         
         $idSiswa = $siswa->id_siswa;
