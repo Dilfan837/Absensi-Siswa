@@ -56,6 +56,13 @@ Route::middleware('auth')->group(function () {
         
         // Laporan Karakter (Radar) untuk Siswa sendiri
         Route::get('/siswa-laporanku', [\App\Http\Controllers\Siswa\SiswaReportController::class, 'myReport'])->name('siswa.reports.my');
+
+        // Dompet Integritas & Marketplace
+        Route::prefix('dompet')->name('siswa.wallet.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Siswa\SiswaWalletController::class, 'index'])->name('index');
+            Route::post('/beli/{id_item}', [\App\Http\Controllers\Siswa\SiswaWalletController::class, 'buyItem'])->name('buy');
+            Route::post('/gunakan/{id_token}', [\App\Http\Controllers\Siswa\SiswaWalletController::class, 'useToken'])->name('use');
+        });
     });
     
     // ============================================
@@ -87,6 +94,14 @@ Route::middleware('auth')->group(function () {
             Route::get('rekap', [\App\Http\Controllers\Admin\AdminMonitoringController::class, 'recapReport'])->name('recap');
         });
         
+        // Point System (Admin)
+        Route::prefix('poin')->name('admin.poin.')->group(function () {
+            Route::get('settings', [\App\Http\Controllers\Admin\PointSettingController::class, 'index'])->name('settings.index');
+            Route::post('settings/update', [\App\Http\Controllers\Admin\PointSettingController::class, 'update'])->name('settings.update');
+            Route::resource('marketplace', \App\Http\Controllers\Admin\FlexibilityItemController::class);
+            Route::get('leaderboard', [\App\Http\Controllers\Admin\PointLeaderboardController::class, 'index'])->name('leaderboard.index');
+        });
+
         // Settings
         Route::prefix('settings')->group(function () {
             Route::get('/', [SettingController::class, 'index'])->name('settings.index');
@@ -94,6 +109,30 @@ Route::middleware('auth')->group(function () {
             Route::post('/locations', [SettingController::class, 'storeLocation'])->name('settings.locations.store');
             Route::put('/locations/{id}', [SettingController::class, 'updateLocation'])->name('settings.locations.update');
             Route::delete('/locations/{id}', [SettingController::class, 'deleteLocation'])->name('settings.locations.delete');
+        });
+        
+        // Setup Sinkronisasi API Siswa Fase 2 (Draft & Fiksasi)
+        Route::prefix('api-siswa')->name('admin.api_siswa.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ApiSyncController::class, 'index'])->name('index');
+            Route::post('/fetch', [\App\Http\Controllers\Admin\ApiSyncController::class, 'fetchApi'])->name('fetch');
+            Route::get('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiSyncController::class, 'aktivasiForm'])->name('aktivasi.form');
+            Route::post('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiSyncController::class, 'aktivasiStore'])->name('aktivasi.store');
+        });
+        
+        // Setup Sinkronisasi API Guru Fase 2
+        Route::prefix('api-guru')->name('admin.api_guru.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ApiGuruSyncController::class, 'index'])->name('index');
+            Route::post('/fetch', [\App\Http\Controllers\Admin\ApiGuruSyncController::class, 'fetchApi'])->name('fetch');
+            Route::get('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiGuruSyncController::class, 'showAktivasiForm'])->name('aktivasi.form');
+            Route::post('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiGuruSyncController::class, 'aktivasiStore'])->name('aktivasi.store');
+        });
+        
+        // Setup Sinkronisasi API Kelas Fase 2
+        Route::prefix('api-kelas')->name('admin.api_kelas.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ApiKelasSyncController::class, 'index'])->name('index');
+            Route::post('/fetch', [\App\Http\Controllers\Admin\ApiKelasSyncController::class, 'fetchApi'])->name('fetch');
+            Route::get('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiKelasSyncController::class, 'showAktivasiForm'])->name('aktivasi.form');
+            Route::post('/aktivasi/{id}', [\App\Http\Controllers\Admin\ApiKelasSyncController::class, 'aktivasiStore'])->name('aktivasi.store');
         });
     });
     
@@ -143,6 +182,9 @@ Route::middleware('auth')->group(function () {
         
         // Laporan Kinerja (Radar) untuk Guru sendiri
         Route::get('laporanku', [\App\Http\Controllers\Guru\GuruReportController::class, 'myReport'])->name('guru.reports.my');
+
+        // Poin Manual Guru
+        Route::post('absensi/{id_absensi}/poin', [\App\Http\Controllers\Guru\GuruPointController::class, 'store'])->name('guru.poin.store');
     });
     
     // Kehadiran (accessible by admin and guru)

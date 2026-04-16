@@ -7,6 +7,8 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\DetailAbsensi;
 use App\Models\Location;
+use App\Http\Controllers\Controller;
+use App\Services\PointService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -119,13 +121,41 @@ class AbsensiController extends Controller
         // ================================
 
         $absensi = Absensi::with(['kelas', 'details.siswa'])->findOrFail($id);
-        return view('absensi.show', compact('absensi'));
+
+        // Ambil riwayat poin manual yang diberikan guru di sesi ini
+        $manualPoints = \App\Models\PointLedger::where('id_absensi', $id)
+            ->whereIn('transaction_type', ['REWARD', 'PENALTY'])
+            ->select('id_siswa', \Illuminate\Support\Facades\DB::raw('SUM(amount) as total_point'))
+            ->groupBy('id_siswa')
+            ->pluck('total_point', 'id_siswa');
+
+        return view('absensi.show', compact('absensi', 'manualPoints'));
     }
 
     public function tutupAbsensi($id)
     {
-        $absensi = Absensi::findOrFail($id);
+        $absensi = Absensi::with('details.siswa')->findOrFail($id);
+        
+        // Mencegah ekseskusi tutup sesi dan penalti berkali-kali jika sudah selesai
+        if ($absensi->status === 'selesai') {
+            return redirect()->back()->with('success', 'Sesi absen sudah ditutup sebelumnya.');
+        }
+
         $absensi->update(['status' => 'selesai']);
+
+        // === HOOK: Berikan PENALTY ke semua siswa yang masih ALPHA ===
+        $pointService = new PointService();
+        foreach ($absensi->details as $detail) {
+            if ($detail->status === 'alpha') {
+                try {
+                    $pointService->penalty($detail->id_siswa, $absensi->id_absensi, $absensi->nama_absensi);
+                } catch (\Exception $e) {
+                    // Log error tapi jangan stop proses penutupan sesi
+                    \Log::warning("Point penalty error siswa #{$detail->id_siswa}: " . $e->getMessage());
+                }
+            }
+        }
+        // ============================================================
 
         return redirect()->back()->with('success', 'Sesi absen ditutup.');
     }
@@ -247,7 +277,7 @@ class AbsensiController extends Controller
             \DB::transaction(function () use ($detail, $sekarang, $request) {
                 // 1. Update status di detail absensi utama
                 $detail->update([
-                    'status' => 'hadir',
+                    'status'     => 'hadir',
                     'waktu_scan' => $sekarang
                 ]);
 
@@ -268,13 +298,24 @@ class AbsensiController extends Controller
 
                 // 3. Catat di tabel Kehadiran sebagai Log Wajah & Waktu Akurat
                 \App\Models\Kehadiran::create([
-                    'id_absensi' => $detail->id_absensi,
-                    'id_siswa' => $detail->id_siswa,
-                    'waktu_absen' => $sekarang,
+                    'id_absensi'       => $detail->id_absensi,
+                    'id_siswa'         => $detail->id_siswa,
+                    'waktu_absen'      => $sekarang,
                     'status_kehadiran' => 'Hadir',
-                    'lampiran_foto' => $fileName,
-                    'keterangan' => 'Hadir melalui sistem QR & Face Recognition'
+                    'lampiran_foto'    => $fileName,
+                    'keterangan'       => 'Hadir melalui sistem QR & Face Recognition'
                 ]);
+
+                // 4. === HOOK: Catat EARN poin ke ledger ===
+                $absensi = \App\Models\Absensi::find($detail->id_absensi);
+                if ($absensi) {
+                    try {
+                        (new PointService())->earn($detail->id_siswa, $detail->id_absensi, $absensi->nama_absensi);
+                    } catch (\Exception $e) {
+                        \Log::warning("Point earn error siswa #{$detail->id_siswa}: " . $e->getMessage());
+                    }
+                }
+                // ==========================================
             });
 
             return response()->json([

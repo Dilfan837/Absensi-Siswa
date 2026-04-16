@@ -57,10 +57,24 @@
         </a>
       </li>
 
+      <li class="menu-item {{ Request::is('api-kelas*') ? 'active' : '' }}">
+        <a href="{{ route('admin.api_kelas.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-cloud-download"></i>
+          <div data-i18n="Sync API Kelas">Sync API Kelas</div>
+        </a>
+      </li>
+
       <li class="menu-item {{ Request::is('data-guru*') ? 'active' : '' }}">
         <a href="{{ route('guru.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-user-pin"></i>
           <div data-i18n="Guru">Data Guru</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('api-guru*') ? 'active' : '' }}">
+        <a href="{{ route('admin.api_guru.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-cloud-download"></i>
+          <div data-i18n="Sync API Guru">Sync API Guru</div>
         </a>
       </li>
 
@@ -75,6 +89,13 @@
         <a href="{{ route('siswa.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-user-badge"></i>
           <div data-i18n="Siswa">Data Siswa</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('api-siswa*') ? 'active' : '' }}">
+        <a href="{{ route('admin.api_siswa.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-cloud-download"></i>
+          <div data-i18n="Sync API Siswa">Sync API Siswa</div>
         </a>
       </li>
 
@@ -136,13 +157,34 @@
       </li>
 
       <li class="menu-header small text-uppercase">
-        <span class="menu-header-text">Pengaturan</span>
+        <span class="menu-header-text">Sistem Gamifikasi & Pengaturan</span>
+      </li>
+
+      <li class="menu-item {{ Request::is('poin/settings*') ? 'active' : '' }}">
+        <a href="{{ route('admin.poin.settings.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-slider"></i>
+          <div data-i18n="Pengaturan Poin">Pengaturan Poin</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('poin/marketplace*') ? 'active' : '' }}">
+        <a href="{{ route('admin.poin.marketplace.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-store"></i>
+          <div data-i18n="Marketplace">Marketplace Token</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ Request::is('poin/leaderboard*') ? 'active' : '' }}">
+        <a href="{{ route('admin.poin.leaderboard.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-trophy"></i>
+          <div data-i18n="Leaderboard">Leaderboard Sekolah</div>
+        </a>
       </li>
 
       <li class="menu-item {{ Request::is('settings*') ? 'active' : '' }}">
         <a href="{{ route('settings.index') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-cog"></i>
-          <div data-i18n="Pengaturan">Pengaturan</div>
+          <div data-i18n="Pengaturan Sistem">Pengaturan Sistem</div>
         </a>
       </li>
     @endif
@@ -233,6 +275,17 @@
         <a href="{{ route('siswa.reports.my') }}" class="menu-link">
           <i class="menu-icon tf-icons bx bx-radar"></i>
           <div data-i18n="Laporan Sikapku">Laporan Sikapku</div>
+        </a>
+      </li>
+
+      <li class="menu-header small text-uppercase">
+        <span class="menu-header-text">Integritas</span>
+      </li>
+
+      <li class="menu-item {{ Request::is('dompet*') ? 'active' : '' }}">
+        <a href="{{ route('siswa.wallet.index') }}" class="menu-link">
+          <i class="menu-icon tf-icons bx bx-wallet"></i>
+          <div data-i18n="Dompet Integritas">Dompet & Token</div>
         </a>
       </li>
     @endif
